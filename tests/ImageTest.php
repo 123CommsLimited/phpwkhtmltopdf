@@ -1,7 +1,10 @@
 <?php
+namespace tests;
+
+use PHPUnit\Framework\TestCase;
 use mikehaertl\wkhtmlto\Image;
 
-class ImageTest extends \PHPUnit_Framework_TestCase
+class ImageTest extends TestCase
 {
     CONST URL = 'http://www.google.com/robots.txt';
 
@@ -32,7 +35,13 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $this->assertFileExists($outFile);
 
         $tmpFile = $image->getImageFilename();
-        $this->assertRegExp("#$binary '[^ ]+' '$tmpFile'#", (string) $image->getCommand());
+        $regex = "#$binary '[^ ]+' '$tmpFile'#";
+        $command = (string) $image->getCommand();
+        if (phpUnitVersion('<', 9)) {
+            $this->assertRegExp($regex, $command);
+        } else {
+            $this->assertMatchesRegularExpression($regex, $command);
+        }
         unlink($outFile);
     }
     public function testCanCreateImageFromUrl()
@@ -81,7 +90,13 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $this->assertFileExists($outFile);
 
         $tmpFile = $image->getImageFilename();
-        $this->assertRegExp("#$binary '[^ ]+' '$tmpFile'#", (string) $image->getCommand());
+        $regex = "#$binary '[^ ]+' '$tmpFile'#";
+        $command = (string) $image->getCommand();
+        if (phpUnitVersion('<', 9)) {
+            $this->assertRegExp($regex, $command);
+        } else {
+            $this->assertMatchesRegularExpression($regex, $command);
+        }
         unlink($outFile);
     }
     public function testCanSetPageFromUrl()
@@ -99,6 +114,21 @@ class ImageTest extends \PHPUnit_Framework_TestCase
 
         $tmpFile = $image->getImageFilename();
         $this->assertEquals("$binary '$url' '$tmpFile'", (string) $image->getCommand());
+        unlink($outFile);
+    }
+
+    public function testToString()
+    {
+        $outFile = $this->getOutFile('png');
+        $binary = $this->getBinary();
+
+        $image = new Image('<html><h1>Test</h1></html>');
+        $image->binary = $binary;
+
+        $this->assertTrue($image->saveAs($outFile));
+        $this->assertFileExists($outFile);
+
+        $this->assertEquals(file_get_contents($outFile), $image->toString());
         unlink($outFile);
     }
 
@@ -124,7 +154,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
 
         $tmpFile = $image->getimageFilename();
         $this->assertFileExists($outFile);
-        $this->assertEquals("$binary --transparent --width '800' --allow '/tmp' --allow '/test' '$inFile' '$tmpFile'", (string) $image->getCommand());
+        $this->assertEquals("$binary '--transparent' '--width' '800' '--allow' '/tmp' '--allow' '/test' '$inFile' '$tmpFile'", (string) $image->getCommand());
         unlink($outFile);
     }
     public function testCanSetOptions()
@@ -149,7 +179,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
 
         $tmpFile = $image->getimageFilename();
         $this->assertFileExists($outFile);
-        $this->assertEquals("$binary --transparent --width '800' --allow '/tmp' --allow '/test' '$inFile' '$tmpFile'", (string) $image->getCommand());
+        $this->assertEquals("$binary '--transparent' '--width' '800' '--allow' '/tmp' '--allow' '/test' '$inFile' '$tmpFile'", (string) $image->getCommand());
         unlink($outFile);
     }
 
@@ -172,7 +202,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
 
         $tmpFile = $image->getImageFilename();
         $command = (string)$image->getCommand();
-        $this->assertEquals("xvfb-run --server-args=\"-screen 0, 1024x768x24\" $binary '$inFile' '$tmpFile'", $command);
+        $this->assertEquals("xvfb-run -a --server-args=\"-screen 0, 1024x768x24\" $binary '$inFile' '$tmpFile'", $command);
         unlink($outFile);
     }
 

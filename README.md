@@ -1,18 +1,17 @@
 PHP WkHtmlToPdf
 ===============
 
-[![Build Status](https://secure.travis-ci.org/mikehaertl/phpwkhtmltopdf.png)](http://travis-ci.org/mikehaertl/phpwkhtmltopdf)
-[![Latest Stable Version](https://poser.pugx.org/mikehaertl/phpwkhtmltopdf/v/stable.svg)](https://packagist.org/packages/mikehaertl/phpwkhtmltopdf)
-[![Total Downloads](https://poser.pugx.org/mikehaertl/phpwkhtmltopdf/downloads.svg)](https://packagist.org/packages/mikehaertl/phpwkhtmltopdf)
-[![Latest Unstable Version](https://poser.pugx.org/mikehaertl/phpwkhtmltopdf/v/unstable.svg)](https://packagist.org/packages/mikehaertl/phpwkhtmltopdf)
-[![HHVM Status](http://hhvm.h4cc.de/badge/yiisoft/yii2-dev.png)](http://hhvm.h4cc.de/package/mikehaertl/phpwkhtmltopdf)
-[![License](https://poser.pugx.org/mikehaertl/phpwkhtmltopdf/license.svg)](https://packagist.org/packages/mikehaertl/phpwkhtmltopdf)
+[![GitHub Tests](https://github.com/mikehaertl/phpwkhtmltopdf/workflows/Tests/badge.svg)](https://github.com/mikehaertl/phpwkhtmltopdf/actions)
+[![Packagist Version](https://img.shields.io/packagist/v/mikehaertl/phpwkhtmltopdf?label=version)](https://packagist.org/packages/mikehaertl/phpwkhtmltopdf)
+[![Packagist Downloads](https://img.shields.io/packagist/dt/mikehaertl/phpwkhtmltopdf)](https://packagist.org/packages/mikehaertl/phpwkhtmltopdf)
+[![GitHub license](https://img.shields.io/github/license/mikehaertl/phpwkhtmltopdf)](https://github.com/mikehaertl/phpwkhtmltopdf/blob/master/LICENSE)
+[![Packagist PHP Version Support](https://img.shields.io/packagist/php-v/mikehaertl/phpwkhtmltopdf)](https://packagist.org/packages/mikehaertl/phpwkhtmltopdf)
 
 PHP WkHtmlToPdf provides a simple and clean interface to ease PDF and image creation with
-[wkhtmltopdf](http://code.google.com/p/wkhtmltopdf/).
+[wkhtmltopdf](http://wkhtmltopdf.org). **The `wkhtmltopdf` and - optionally - `wkhtmltoimage`
+command must be installed and working on your system.** See the section below for details.
 
-**The [wkhtmltopdf](http://wkhtmltopdf.org) and - optionally - `wkhtmltoimage` command must be installed and working on your system.**
-See the section below for details.
+For Windows systems make sure to set the path to wkhtmltopdf.exe in the binary option. Alternatively you can add the wkhtmltopdf "bin" directory to the system PATH variable to allow wkhtmltopdf command available to Windows CMD.
 
 ## Installation
 
@@ -22,61 +21,90 @@ Install the package through [composer](http://getcomposer.org):
 composer require mikehaertl/phpwkhtmltopdf
 ```
 
+Make sure, that you include the composer [autoloader](https://getcomposer.org/doc/01-basic-usage.md#autoloading)
+somewhere in your codebase.
+
+## Examples
+
 ### Single page PDF
 
 ```php
+<?php
 use mikehaertl\wkhtmlto\Pdf;
 
-// You can pass a filename, a HTML string or an URL to the constructor
-$pdf = new Pdf('/home/joe/page.html');
+// You can pass a filename, a HTML string, an URL or an options array to the constructor
+$pdf = new Pdf('/path/to/page.html');
 
-// On some systems you may have to set the binary path.
+// On some systems you may have to set the path to the wkhtmltopdf executable
 // $pdf->binary = 'C:\...';
 
-$pdf->saveAs('/tmp/new.pdf');
+if (!$pdf->saveAs('/path/to/page.pdf')) {
+    $error = $pdf->getError();
+    // ... handle error here
+}
 ```
 
 ### Multi page PDF with Toc and Cover page
 
 
 ```php
+<?php
 use mikehaertl\wkhtmlto\Pdf;
 
 $pdf = new Pdf;
-$pdf->addPage('/home/joe/page.html');
+$pdf->addPage('/path/to/page.html');
 $pdf->addPage('<html>....</html>');
-$pdf->addPage('http://google.com');
+$pdf->addPage('http://www.example.com');
 
 // Add a cover (same sources as above are possible)
-$pdf->addCover('mycover.html');
+$pdf->addCover('/path/to/mycover.html');
 
 // Add a Table of contents
 $pdf->addToc();
 
 // Save the PDF
-$pdf->saveAs('/tmp/new.pdf');
+if (!$pdf->saveAs('/path/to/report.pdf')) {
+    $error = $pdf->getError();
+    // ... handle error here
+}
 
 // ... or send to client for inline display
-$pdf->send();
+if (!$pdf->send()) {
+    $error = $pdf->getError();
+    // ... handle error here
+}
 
 // ... or send to client as file download
-$pdf->send('test.pdf');
+if (!$pdf->send('report.pdf')) {
+    $error = $pdf->getError();
+    // ... handle error here
+}
+
+// ... or you can get the raw pdf as a string
+$content = $pdf->toString();
 ```
 
 ### Creating an image
 
 ```php
+<?php
 use mikehaertl\wkhtmlto\Image;
 
-// You can pass a filename, a HTML string or an URL to the constructor
-$image = new Image('/home/joe/page.html');
-$image->saveAs('/tmp/new.png');
+// You can pass a filename, a HTML string, an URL or an options array to the constructor
+$image = new Image('/path/to/page.html');
+$image->saveAs('/path/to/page.png');
 
 // ... or send to client for inline display
-$image->send();
+if (!$image->send()) {
+    $error = $image->getError();
+    // ... handle error here
+}
 
 // ... or send to client as file download
-$image->send('test.png');
+if (!$image->send('page.png')) {
+    $error = $image->getError();
+    // ... handle error here
+}
 ```
 
 ## Setting options
@@ -90,6 +118,7 @@ The `wkhtmltopdf` shell command accepts different types of options:
 Please see `wkhtmltopdf -H` for a full explanation. All options are passed as array, for example:
 
 ```php
+<?php
 $options = array(
     'no-outline',           // option without argument
     'encoding' => 'UTF-8',  // option with argument
@@ -99,14 +128,14 @@ $options = array(
 
     // Repeatable options with single argument
     'run-script' => array(
-        'local1.js',
-        'local2.js',
+        '/path/to/local1.js',
+        '/path/to/local2.js',
     ),
 
     // Repeatable options with 2 arguments
     'replace' => array(
-        '{page}' => $page++,
-        '{title}' => $pageTitle,
+        'number' => $page++,      // Replace '[number]'
+        'title' => $pageTitle,    // Replace '[title]'
     ),
 );
 ```
@@ -114,6 +143,7 @@ $options = array(
 Options can be passed to several methods for PDFs:
 
 ```php
+<?php
 $pdf = new Pdf($globalOptions);         // Set global PDF options
 $pdf->setOptions($globalOptions);       // Set global PDF options (alternative)
 $pdf->addPage($page, $pageOptions);     // Add page with options
@@ -127,52 +157,98 @@ $pdf->addToc($tocOptions);              // Add TOC with options
 For `wkhtmltoimage` there's only one set of options:
 
 ```php
+<?php
 $image = new Image($options);   // Set image options
 $image->setOptions($options);   // Set image options (alternative)
 ```
 
-### Special global options
+### Wrapper options
 
-There are some special options to configure the wrapper itself. They can be passed to the constructor
-or set via `setOptions()`:
+The wrapper itself is configured by the following special options that can be passed
+to the constructor, set as object properties or via `setOptions()`:
 
- * `binary`: Path or filename of the `wkhtmltopdf` shell command. Default is `wkhtmltopdf`.
- * `commandOptions`: Options to pass to `mikehaertl\shellcommand\Command`.
-    See [php-shellcommand](https://github.com/mikehaertl/php-shellcommand).
+ * `binary`: Full path to the `wkhtmltopdf` command. Default is `wkhtmltopdf` which assumes that the
+   command is in your shell's search path.
+ * `commandOptions`: Options to pass to https://github.com/mikehaertl/php-shellcommand.
  * `tmpDir`: Path to tmp directory. Defaults to the PHP temp dir.
- * `ignoreWarnings`: Whether to ignore any errors if a PDF file was still created. Default is false.
+ * `ignoreWarnings`: Whether to ignore any errors if a PDF file was still created. Default is `false`.
  * `version9`: Whether to use command line syntax for older wkhtmltopdf versions.
 
-In addition to the `binary`, `commandOptions`, `tmpDir` and `ignorWarnings` options above,
+In addition to the `binary`, `commandOptions`, `tmpDir` and `ignoreWarnings` options above,
 the `Image` class also has a `type` option:
 
  * `type`: The image type. Default is `png`. You can also use `jpg` or `bmp`.
 
+`commandOptions` can be used to set environment variables for `wkhtmltopdf`. For example, if you
+want to pass UTF-8 encoded arguments, you may have to set the `LANG` environment variable.
+
+```php
+<?php
+$pdf = new Pdf(array(
+    'binary' => '/obscure/path/to/wkhtmltopdf',
+    'ignoreWarnings' => true,
+    'commandOptions' => array(
+        'useExec' => true,      // Can help on Windows systems
+        'procEnv' => array(
+            // Check the output of 'locale -a' on your system to find supported languages
+            'LANG' => 'en_US.utf-8',
+        ),
+    ),
+));
+```
+
+### Passing strings
+
+Some options like `header-html` usually expect a URL or a filename. With our
+library you can also pass a string. The class will try to detect if the
+argument is a URL, a filename or some HTML or XML content.  To make detection
+easier you can surround your content in `<html>` tag.
+
+If this doesn't work correctly you can also pass an instance of our `File`
+helper as a last resort:
+
+```php
+<?php
+use mikehaertl\tmp\File;
+$options = [
+    'header-html' => new File('Complex content', '.html'),
+];
+```
+
 ## Error handling
 
-`send()` and `saveAs()` will return `false` on error. In this case the detailed error message is
+`send()`, `saveAs()` and `toString()` will return `false` on error. In this case the detailed error message is
 available from `getError()`:
 
 ```php
+<?php
 if (!$pdf->send()) {
+    throw new Exception('Could not create PDF: '.$pdf->getError());
+}
+
+$content = $pdf->toString();
+if ($content === false) {
     throw new Exception('Could not create PDF: '.$pdf->getError());
 }
 ```
 
-## Note for Windows users
+## Known Issues
+
+### Use under Windows
 
 If you use double quotes (`"`) or percent signs (`%`) as option values, they may get converted to spaces.
-In this case you can disable argument escaping in the `Command`. There are also two interesting options to
-`proc_open()` that you may want to use:
+In this case you can disable argument escaping in the [command](https://github.com/mikehaertl/php-shellcommand).
+There are also two interesting options to `proc_open()` that you may want to use on Windows:
 
 ```php
+<?php
 $pdf = new Pdf(array(
     'commandOptions' => array(
         'escapeArgs' => false,
         'procOptions' => array(
-            // This will bypass the cmd.exe which seems to be recommended
+            // This will bypass the cmd.exe which seems to be recommended on Windows
             'bypass_shell' => true,
-            // Try this if you get weird errors
+            // Also worth a try if you get unexplainable errors
             'suppress_errors' => true,
         ),
     ),
@@ -185,6 +261,37 @@ surround your argument values with extra double quotes.
 
 I also found that some options don't work on Windows (tested with wkhtmltopdf 0.11 rc2), like the
 `user-style-sheet` option used in the example below.
+
+### Download Problems
+
+There have been many reports about corrupted PDFs or images when using `send()`.
+They are often caused by the webserver (Apache, Nginx, ...) performing additional
+compression. This will mess up the `Content-Length` header which is added by this
+library. It's useful to let the browser show a progress bar.
+
+To fix this there are two options:
+
+ 1. Exclude the download URL from compression in your Webserver. For example if your
+    script is called `pdf.php` then for [mod_deflate](https://httpd.apache.org/docs/2.4/mod/mod_deflate.html) in Apache
+    you could try to add this to your configuration:
+    ```
+    SetEnvIfNoCase REQUEST_URI ^/pdf.php$ no-gzip dont-vary
+    ```
+
+    For Nginx there are [similar solutions](https://serverfault.com/questions/438237/turn-off-gzip-for-a-location-in-nginx)
+    to disable `gzip` for a specific location.
+
+ 2. Suppress the `Content-Length` header when you send a file (available since 2.5.0):
+
+    ```php
+    <?php
+    $pdf->send('name.pdf', false, array(
+        'Content-Length' => false,
+    ));
+    $image->send('name.png', false, array(
+        'Content-Length' => false,
+    ));
+    ```
 
 
 ## Installation of wkhtmltopdf
@@ -217,6 +324,7 @@ which will create quite some extra load on your CPU. So this setup is only recom
 To use the built in support you have to set `enableXvfb` in the `commandOptions`. There are also some options you can set.
 
 ```php
+<?php
 $pdf = new Pdf(array(
     // Explicitly tell wkhtmltopdf that we're using an X environment
     'use-xserver',
@@ -226,10 +334,11 @@ $pdf = new Pdf(array(
         'enableXvfb' => true,
 
         // Optional: Set your path to xvfb-run. Default is just 'xvfb-run'.
-        // 'xvfbRunBin' => '/usr/bin/xvfb-run',
+        // 'xvfbRunBinary' => '/usr/bin/xvfb-run',
 
         // Optional: Set options for xfvb-run. The following defaults are used.
         // 'xvfbRunOptions' =>  '--server-args="-screen 0, 1024x768x24"',
+    ),
 ));
 ```
 
@@ -238,14 +347,18 @@ $pdf = new Pdf(array(
 It's better to start a Xvfb process once and reuse it for all your PHP requests
 (thanks to Larry Williamson for [the original idea](https://coderwall.com/p/tog9eq)).
 This requires that you have root access to your machine as you have to add a startup script
-for that process. We have provided an example script for Ubuntu [here](https://gist.github.com/eusonlito/7889622)
-(Thanks eusonlito). You can put it to `/etc/init.d/xvfb` and add it to your startup files with
-`update-rc.d xvfb defaults 10`. It should be easy to adapt the script for other Linux versions.
+for that process. We have provided an example [init script](https://gist.github.com/eusonlito/7889622)
+for Ubuntu (thanks eusonlito). You can put it to `/etc/init.d/xvfb` and add it to your startup files with
+`update-rc.d xvfb defaults 10`.
+
+If your system is based on systemd [this config](https://gist.github.com/nkm/91006178753df6f503c1)
+should help (thanks nkm).
 
 If your `Xvfb` process is running, you just have to tell the class to use this X display for
 rendering. This is done via an environment variable.
 
 ```php
+<?php
 $pdf = new Pdf(array(
     'use-xserver',
     'commandOptions' => array(
@@ -262,6 +375,7 @@ But then I had scaling issues which went away after I set all margins to zero an
 added the margins through CSS. You can also use `cm` or `in` in CSS as this is more apropriate for print styles.
 
 ```php
+<?php
 use mikehaertl\wkhtmlto\Pdf;
 
 // Create a new Pdf object with some global PDF options
@@ -274,19 +388,23 @@ $pdf = new Pdf(array(
 
     // Default page options
     'disable-smart-shrinking',
-    'user-style-sheet' => 'pdf.css',
+    'user-style-sheet' => '/path/to/pdf.css',
 ));
 
 // Add a page. To override above page defaults, you could add
 // another $options array as second argument.
-$pdf->addPage('demo.html');
+$pdf->addPage('/path/to/demo.html');
 
-$pdf->send();
+if (!$pdf->send()) {
+    $error = $pdf->getError();
+    // ... handle error here
+}
 ```
 
 **demo.html**
 ```html
 <!DOCTYPE html>
+<html>
 <head>
 </head>
 <body>

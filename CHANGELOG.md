@@ -1,8 +1,63 @@
 # CHANGELOG
 
+## 2.5.0
+
+ * Enhancement: Issue #366 Allow to pass additional HTTP headers to the `send()` method
+
+## 2.4.2
+
+ * This release only contains fixes for the test setup.
+
+## 2.4.1
+
+ * Fix: Pushed version constraints for php-shellcommand and php-tmpfile which should fix hanging issues.
+
+## 2.4.0
+
+ * Enhancement: Issue #307 Improved and unified detection of URL, File, HTML and XML content
+
+## 2.3.1
+
+ * Fix: Issue #264 Problem with tmpDir passed in constructor
+
+## 2.3.0
+
+ * Issue #258 Add toString() method to Image class
+
+## 2.2.2
+
+ * Also create tmp file for xsl-style-sheet and user-style-sheet if required
+
+## 2.2.1
+
+ * Issue #219: Make `header-html` and `footer-html` also work for Toc and cover page
+
+## 2.2.0
+
+ * Add a `$type` parameter to `addPage()` and `addToc()` (#169)
+
+## 2.1.1
+
+ * Add `-a` to default `xvfb-run` options
+
+## 2.1.0
+
+ * We now follow [semver](http://semver.org/)!
+ * Issue #112: Add toString() to get raw PDF content as string
+
+## 2.0.4
+
+ * Issue #100: Fix issue with header-/footer-html
+
+## 2.0.3
+
+ * Make dependencies in `composer.json` less restrictive
+ * Remove `composer.lock` to allow for independent updates of dependencies
+
 ## 2.0.2
 
- * WIP
+ * Issue #56: Fix issue with `proc_open()` on windows
+ * Add detection for XML strings
 
 ## 2.0.1
 
@@ -10,7 +65,7 @@
 
 ## 2.0.0
 
-In this major release we have added a wrapper for wkhtmltopdf and cleaned
+In this major release we have added a wrapper for wkhtmltoimage and cleaned
 up the code and interface. We also introduced namespaces and Travis testing.
 Please have a look at the README.md for the new API.
 
